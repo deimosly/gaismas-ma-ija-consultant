@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#15120f">
+  <meta name="description" content="Offline-first lighting consultation assistant for in-store use.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>LightGuide</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" data-i18n="assistantLabel">Store assistant</p>
+        <h1>LightGuide</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="installBtn" class="icon-button hidden" type="button" aria-label="Install app">＋</button>
+        <button id="themeBtn" class="icon-button" type="button" aria-label="Toggle theme">◐</button>
+      </div>
+    </header>
+
+    <main id="mainContent" class="main-content" tabindex="-1">
+      <section id="consultView" class="view active" aria-labelledby="consultHeading">
+        <div class="hero-card">
+          <div>
+            <p class="eyebrow" data-i18n="guidedConsultation">Guided consultation</p>
+            <h2 id="consultHeading" data-i18n="findRightLamp">Find the right lamp without guessing</h2>
+            <p data-i18n="heroDescription">Ask the customer a few focused questions, then compare the strongest matches from your catalogue.</p>
+          </div>
+          <button id="startConsultBtn" class="primary-button large" type="button" data-i18n="startConsultation">Start consultation</button>
+        </div>
+
+        <div class="quick-grid">
+          <button class="quick-card" type="button" data-quick="specific">
+            <span class="quick-icon">⌕</span>
+            <strong data-i18n="specificModel">Specific model</strong>
+            <small data-i18n="specificModelHint">Search by name, code or feature</small>
+          </button>
+          <button class="quick-card" type="button" data-quick="room">
+            <span class="quick-icon">⌂</span>
+            <strong data-i18n="chooseByRoom">Choose by room</strong>
+            <small data-i18n="chooseByRoomHint">Bedroom, kitchen, bathroom and more</small>
+          </button>
+          <button class="quick-card" type="button" data-quick="problem">
+            <span class="quick-icon">⚡</span>
+            <strong data-i18n="solveProblem">Solve a problem</strong>
+            <small data-i18n="solveProblemHint">Too dark, sensor, reading, low ceiling</small>
+          </button>
+          <button class="quick-card" type="button" data-quick="catalog">
+            <span class="quick-icon">▦</span>
+            <strong data-i18n="browseCatalog">Browse catalogue</strong>
+            <small data-i18n="browseCatalogHint">Use filters without the questionnaire</small>
+          </button>
+        </div>
+
+        <section class="panel recent-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow" data-i18n="recentActivity">Recent activity</p>
+              <h3 data-i18n="latestConsultations">Latest consultations</h3>
+            </div>
+            <button id="clearHistoryBtn" class="text-button" type="button" data-i18n="clear">Clear</button>
+          </div>
+          <div id="homeHistory" class="empty-state" data-i18n="noConsultations">No consultations yet.</div>
+        </section>
+      </section>
+
+      <section id="wizardView" class="view" aria-labelledby="wizardTitle">
+        <div class="wizard-topline">
+          <button id="wizardBackBtn" class="secondary-button" type="button">← <span data-i18n="back">Back</span></button>
+          <button id="wizardRestartBtn" class="text-button" type="button" data-i18n="restart">Restart</button>
+        </div>
+        <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
+        <p id="wizardProgressText" class="progress-text"></p>
+        <section class="panel wizard-panel">
+          <p id="wizardEyebrow" class="eyebrow"></p>
+          <h2 id="wizardTitle"></h2>
+          <p id="wizardDescription" class="muted"></p>
+          <div id="wizardContent" class="wizard-content"></div>
+          <div id="wizardActions" class="wizard-actions"></div>
+        </section>
+      </section>
+
+      <section id="resultsView" class="view" aria-labelledby="resultsHeading">
+        <div class="wizard-topline">
+          <button id="resultsBackBtn" class="secondary-button" type="button">← <span data-i18n="adjustAnswers">Adjust answers</span></button>
+          <button id="newConsultBtn" class="text-button" type="button" data-i18n="newConsultation">New consultation</button>
+        </div>
+        <section class="result-summary panel">
+          <div>
+            <p class="eyebrow" data-i18n="recommendations">Recommendations</p>
+            <h2 id="resultsHeading" data-i18n="bestMatches">Best matches</h2>
+            <p id="resultSummaryText" class="muted"></p>
+          </div>
+          <div class="summary-actions">
+            <button id="copySummaryBtn" class="secondary-button" type="button" data-i18n="copySummary">Copy summary</button>
+            <button id="customerModeBtn" class="secondary-button" type="button" data-i18n="customerMode">Customer mode</button>
+          </div>
+        </section>
+        <div id="resultsList" class="product-grid"></div>
+        <section id="noResults" class="panel empty-state hidden">
+          <h3 data-i18n="noExactMatches">No exact matches</h3>
+          <p data-i18n="noExactMatchesHint">Try increasing the budget, allowing ordered items, or removing one required feature.</p>
+          <button id="relaxFiltersBtn" class="primary-button" type="button" data-i18n="showClosest">Show closest alternatives</button>
+        </section>
+      </section>
+
+      <section id="catalogView" class="view" aria-labelledby="catalogHeading">
+        <div class="section-heading sticky-heading">
+          <div>
+            <p class="eyebrow" data-i18n="productDatabase">Product database</p>
+            <h2 id="catalogHeading" data-i18n="catalog">Catalogue</h2>
+          </div>
+          <button id="addProductBtn" class="primary-button compact" type="button" data-i18n="addProduct">Add product</button>
+        </div>
+        <div class="search-row">
+          <label class="search-field">
+            <span class="sr-only" data-i18n="search">Search</span>
+            <input id="catalogSearch" type="search" autocomplete="off" placeholder="Search name, code or feature">
+          </label>
+          <button id="catalogFilterBtn" class="secondary-button" type="button" data-i18n="filters">Filters</button>
+        </div>
+        <div id="activeFilterChips" class="chip-row"></div>
+        <div id="catalogList" class="product-grid"></div>
+      </section>
+
+      <section id="favoritesView" class="view" aria-labelledby="favoritesHeading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="savedProducts">Saved products</p>
+            <h2 id="favoritesHeading" data-i18n="favorites">Favourites</h2>
+          </div>
+        </div>
+        <div id="favoritesList" class="product-grid"></div>
+      </section>
+
+      <section id="historyView" class="view" aria-labelledby="historyHeading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="consultationLog">Consultation log</p>
+            <h2 id="historyHeading" data-i18n="history">History</h2>
+          </div>
+          <button id="exportHistoryBtn" class="secondary-button compact" type="button" data-i18n="export">Export</button>
+        </div>
+        <div id="historyList"></div>
+      </section>
+
+      <section id="settingsView" class="view" aria-labelledby="settingsHeading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="appControls">App controls</p>
+            <h2 id="settingsHeading" data-i18n="settings">Settings</h2>
+          </div>
+        </div>
+
+        <section class="panel settings-group">
+          <h3 data-i18n="language">Language</h3>
+          <div class="segmented-control" role="group" aria-label="Language">
+            <button type="button" data-language="en">EN</button>
+            <button type="button" data-language="lv">LV</button>
+            <button type="button" data-language="ru">RU</button>
+          </div>
+        </section>
+
+        <section class="panel settings-group">
+          <h3 data-i18n="catalogueManagement">Catalogue management</h3>
+          <p class="muted" data-i18n="catalogueManagementHint">Changes are stored on this device. Export a backup before clearing browser data.</p>
+          <div class="button-stack">
+            <button id="importCsvBtn" class="secondary-button" type="button" data-i18n="importCsv">Import CSV</button>
+            <button id="importJsonBtn" class="secondary-button" type="button" data-i18n="importJson">Import JSON backup</button>
+            <button id="exportCatalogBtn" class="secondary-button" type="button" data-i18n="exportCatalog">Export catalogue backup</button>
+            <button id="downloadTemplateBtn" class="secondary-button" type="button" data-i18n="downloadTemplate">Download CSV template</button>
+            <button id="resetCatalogBtn" class="danger-button" type="button" data-i18n="resetSample">Reset to starter catalogue</button>
+          </div>
+          <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden>
+          <input id="jsonFileInput" type="file" accept=".json,application/json" hidden>
+        </section>
+
+        <section class="panel settings-group">
+          <h3 data-i18n="displayOptions">Display options</h3>
+          <label class="toggle-row">
+            <span>
+              <strong data-i18n="showPrices">Show prices</strong>
+              <small data-i18n="showPricesHint">Hide prices when showing the phone to a customer.</small>
+            </span>
+            <input id="showPricesToggle" type="checkbox" checked>
+          </label>
+          <label class="toggle-row">
+            <span>
+              <strong data-i18n="compactCards">Compact product cards</strong>
+              <small data-i18n="compactCardsHint">Fit more products on screen.</small>
+            </span>
+            <input id="compactCardsToggle" type="checkbox">
+          </label>
+        </section>
+
+        <section class="panel settings-group">
+          <h3 data-i18n="about">About</h3>
+          <p class="muted" data-i18n="aboutText">LightGuide is a decision-support tool. Always verify packaging, electrical compatibility, dimensions and current stock before the sale.</p>
+          <p class="version">Version 1.0.0</p>
+        </section>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Primary navigation">
+      <button class="nav-item active" type="button" data-view="consultView"><span>✦</span><small data-i18n="consult">Consult</small></button>
+      <button class="nav-item" type="button" data-view="catalogView"><span>▦</span><small data-i18n="catalog">Catalogue</small></button>
+      <button class="nav-item" type="button" data-view="favoritesView"><span>♡</span><small data-i18n="favorites">Favourites</small></button>
+      <button class="nav-item" type="button" data-view="historyView"><span>↺</span><small data-i18n="history">History</small></button>
+      <button class="nav-item" type="button" data-view="settingsView"><span>⚙</span><small data-i18n="settings">Settings</small></button>
+    </nav>
+  </div>
+
+  <dialog id="productDialog" class="app-dialog">
+    <form method="dialog" class="dialog-card">
+      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+      <div id="productDialogContent"></div>
+    </form>
+  </dialog>
+
+  <dialog id="editProductDialog" class="app-dialog">
+    <form id="productForm" class="dialog-card form-dialog">
+      <button class="dialog-close" type="button" data-close-dialog="editProductDialog" aria-label="Close">×</button>
+      <p class="eyebrow" data-i18n="catalogueEditor">Catalogue editor</p>
+      <h2 id="productFormTitle" data-i18n="addProduct">Add product</h2>
+      <input id="productId" type="hidden">
+      <div class="form-grid">
+        <label><span data-i18n="productName">Product name</span><input id="productName" required></label>
+        <label><span data-i18n="productCode">Product code</span><input id="productCode"></label>
+        <label><span data-i18n="price">Price (€)</span><input id="productPrice" type="number" min="0" step="0.01"></label>
+        <label><span data-i18n="lumens">Lumens</span><input id="productLumens" type="number" min="0" step="1"></label>
+        <label><span data-i18n="watts">Power (W)</span><input id="productWatts" type="number" min="0" step="0.1"></label>
+        <label><span data-i18n="colorTemperature">Colour temperature</span><input id="productKelvin" placeholder="3000 or 2700-6500"></label>
+        <label><span data-i18n="diameter">Diameter / width (cm)</span><input id="productSize" type="number" min="0" step="0.1"></label>
+        <label><span data-i18n="stockStatus">Stock status</span>
+          <select id="productStock">
+            <option value="in_stock">In stock</option>
+            <option value="display">Display only</option>
+            <option value="order">Order</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </label>
+        <label><span data-i18n="storeLocation">Store / location</span><input id="productLocation" placeholder="Spice, Brīvības, warehouse"></label>
+        <label><span data-i18n="category">Category</span>
+          <select id="productCategory">
+            <option value="ceiling">Ceiling</option>
+            <option value="pendant">Pendant</option>
+            <option value="wall">Wall</option>
+            <option value="table">Table</option>
+            <option value="floor">Floor</option>
+            <option value="cabinet">Cabinet</option>
+            <option value="track">Track</option>
+            <option value="outdoor">Outdoor</option>
+          </select>
+        </label>
+        <label><span data-i18n="ipRating">IP rating</span><input id="productIp" placeholder="IP20, IP44, IP65"></label>
+        <label class="full-width"><span data-i18n="roomsComma">Suitable rooms (comma-separated)</span><input id="productRooms" placeholder="bedroom,living_room,kitchen"></label>
+        <label class="full-width"><span data-i18n="stylesComma">Styles (comma-separated)</span><input id="productStyles" placeholder="modern,minimal,boho"></label>
+        <label class="full-width"><span data-i18n="featuresComma">Features (comma-separated)</span><input id="productFeatures" placeholder="dimmable,sensor,smart,reading"></label>
+        <label class="full-width"><span data-i18n="imageUrl">Image URL</span><input id="productImage" type="url" placeholder="https://..."></label>
+        <label class="full-width"><span data-i18n="notes">Notes</span><textarea id="productNotes" rows="3"></textarea></label>
+      </div>
+      <div class="dialog-actions">
+        <button id="deleteProductBtn" class="danger-button hidden" type="button" data-i18n="delete">Delete</button>
+        <button class="secondary-button" type="button" data-close-dialog="editProductDialog" data-i18n="cancel">Cancel</button>
+        <button class="primary-button" type="submit" data-i18n="saveProduct">Save product</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="filterDialog" class="app-dialog">
+    <form method="dialog" class="dialog-card form-dialog">
+      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+      <p class="eyebrow" data-i18n="catalogueFilters">Catalogue filters</p>
+      <h2 data-i18n="narrowResults">Narrow the results</h2>
+      <div id="catalogFiltersContent" class="form-grid"></div>
+      <div class="dialog-actions">
+        <button id="clearCatalogFiltersBtn" class="secondary-button" type="button" data-i18n="clearFilters">Clear filters</button>
+        <button class="primary-button" value="default" data-i18n="applyFilters">Apply filters</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="compareDialog" class="app-dialog">
+    <form method="dialog" class="dialog-card wide-dialog">
+      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+      <p class="eyebrow" data-i18n="productComparison">Product comparison</p>
+      <h2 data-i18n="compareSelected">Compare selected lamps</h2>
+      <div id="compareContent" class="compare-table-wrap"></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <button id="compareFab" class="compare-fab hidden" type="button"><span data-i18n="compare">Compare</span> <strong id="compareCount">0</strong></button>
+
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
